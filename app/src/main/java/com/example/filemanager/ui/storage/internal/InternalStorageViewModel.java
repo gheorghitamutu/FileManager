@@ -1,19 +1,30 @@
 package com.example.filemanager.ui.storage.internal;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class InternalStorageViewModel extends ViewModel {
+import java.io.File;
 
-    private MutableLiveData<String> mText;
+class InternalStorageViewModel extends ViewModel {
 
-    public InternalStorageViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is internal storage fragment.");
+    private String filepath;
+    private String filename;
+    private boolean isDirectory;
+
+    InternalStorageViewModel(File file) {
+        this.filepath = file.getPath();
+        this.filename = file.getName();
+        this.isDirectory = file.isDirectory();
     }
 
-    LiveData<String> getText() {
-        return mText;
+    String getFilepath() {
+        return filepath;
+    }
+
+    String getFilename() {
+        return filename;
+    }
+
+    boolean isDirectory() {
+        return isDirectory;
     }
 }
