@@ -12,11 +12,17 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.filemanager.MainActivity;
+import com.example.filemanager.Manager;
 import com.example.filemanager.R;
+import com.example.filemanager.ui.storage.options.Dialog;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
@@ -123,25 +129,42 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     }
 
     public static class OnLongListener implements View.OnLongClickListener {
-        boolean isSelected = false;
 
         @Override
         public boolean onLongClick(View v) {
-            if (isSelected) {
-                v.setBackgroundColor(
-                        ContextCompat.getColor(
-                                Objects.requireNonNull(v.getContext()), R.color.default_color));
-            } else {
-                v.setBackgroundColor(
-                        ContextCompat.getColor(
-                                Objects.requireNonNull(v.getContext()), R.color.colorAccent));
-            }
-            isSelected = !isSelected;
-            return true;
-        }
+            TextView tvFilename = v.findViewById(R.id.filename);
+            String currentFilename = tvFilename.getText().toString();
+            Manager.setCurrentFile(currentFilename);
 
-        boolean getIsSelected() {
-            return isSelected;
+            v.setBackgroundColor(
+                    ContextCompat.getColor(
+                            Objects.requireNonNull(v.getContext()), R.color.colorAccent));
+
+            FragmentManager manager = null;
+            try {
+                MainActivity ma = ((MainActivity) (Manager.getActivity()));
+                manager = Objects.requireNonNull(ma).getSupportFragmentManager();
+            } catch (ClassNotFoundException |
+                    NoSuchMethodException |
+                    InvocationTargetException |
+                    IllegalAccessException |
+                    NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+
+            Fragment frag = Objects.requireNonNull(manager).findFragmentByTag("fragment_options_dialog");
+            if (frag != null) {
+                manager.beginTransaction().remove(frag).commit();
+            }
+
+            Dialog od = Dialog.newInstance(1);
+            od.show(manager, "fragment_options_dialog");
+
+            v.setBackgroundColor(
+                    ContextCompat.getColor(
+                            Objects.requireNonNull(v.getContext()), R.color.default_color));
+
+            return true;
         }
     }
 }

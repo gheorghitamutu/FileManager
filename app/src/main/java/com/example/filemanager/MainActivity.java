@@ -22,6 +22,8 @@ import androidx.fragment.app.FragmentManager;
 import com.example.filemanager.ui.home.HomeFragment;
 import com.example.filemanager.ui.storage.external.ExternalStorageFragment;
 import com.example.filemanager.ui.storage.internal.InternalStorageFragment;
+import com.example.filemanager.ui.storage.options.Content;
+import com.example.filemanager.ui.storage.options.Dialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -29,10 +31,12 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        Dialog.OnListFragmentInteractionListener {
 
     private Toolbar toolbar;
     private DrawerLayout drawer;
+    private Fragment currentNavigationFragment;
 
     private static final int REQUEST_CODE_WRITE_STORAGE = 102;
     private static final int REQUEST_CODE_READ_STORAGE = 101;
@@ -83,20 +87,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks
-        Fragment fragment;
         FragmentContainerView containerView = findViewById(R.id.nav_host_fragment);
         int id = item.getItemId();
 
         switch (id) {
             case R.id.nav_home:
-                fragment = new HomeFragment();
+                currentNavigationFragment = new HomeFragment();
                 break;
             case R.id.nav_internal_storage:
-                fragment = new InternalStorageFragment();
+                currentNavigationFragment = new InternalStorageFragment();
                 break;
             case R.id.nav_external_storage:
-                fragment = new ExternalStorageFragment();
+                currentNavigationFragment = new ExternalStorageFragment();
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + id);
@@ -105,7 +107,7 @@ public class MainActivity extends AppCompatActivity
         item.setChecked(true);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.nav_host_fragment, fragment).commit();
+        fragmentManager.beginTransaction().replace(R.id.nav_host_fragment, currentNavigationFragment).commit();
 
         containerView.post(new Runnable() {
             @Override
@@ -147,6 +149,14 @@ public class MainActivity extends AppCompatActivity
                 Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0]);
                 // resume tasks needing this permission
             }
+        }
+    }
+
+    @Override
+    public void onListFragmentInteraction(Content.Item item) {
+        if (currentNavigationFragment instanceof InternalStorageFragment) {
+            InternalStorageFragment isf = (InternalStorageFragment) currentNavigationFragment;
+            isf.processActionOnItem(item);
         }
     }
 }

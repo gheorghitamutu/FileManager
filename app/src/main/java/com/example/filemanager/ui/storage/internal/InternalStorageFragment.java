@@ -1,12 +1,12 @@
 package com.example.filemanager.ui.storage.internal;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -14,21 +14,26 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.filemanager.Manager;
 import com.example.filemanager.R;
+import com.example.filemanager.ui.storage.options.Content;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+// TODO: refresh fragment with another root (you may have to use Manager)
+// https://stackoverflow.com/questions/20702333/refresh-fragment-at-reload
 public class InternalStorageFragment extends Fragment {
 
     private RecyclerView rv;
     private ArrayList<InternalStorageViewModel> models;
     private LinearLayout llNoMedia;
+    private View rootView;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_internal_storage, container, false);
+        rootView = inflater.inflate(R.layout.fragment_internal_storage, container, false);
 
         TextView tvFilepath = rootView.findViewById(R.id.filepath);
         llNoMedia = rootView.findViewById(R.id.noMedia);
@@ -44,7 +49,7 @@ public class InternalStorageFragment extends Fragment {
         Adapter rvAdapter = new Adapter(models);
         rv.setAdapter(rvAdapter);
 
-        String rootPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        String rootPath = Manager.getCurrentPath();
         tvFilepath.setText(rootPath);
         getFilesList(rootPath);
 
@@ -84,4 +89,9 @@ public class InternalStorageFragment extends Fragment {
         });
     }
 
+    public void processActionOnItem(Content.Item item) {
+        // TODO: actual action (popup buttons for do action and cancel)
+        final String message = item.toString() + " " + Manager.getCurrentPath() + "/" + Manager.getCurrentFile();
+        Toast.makeText(rootView.getContext(), message, Toast.LENGTH_SHORT).show();
+    }
 }
