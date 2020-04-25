@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage.internal;
+package com.example.filemanager.ui.storage;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -26,10 +26,10 @@ import java.util.Comparator;
 
 // TODO: refresh fragment with another root (you may have to use Manager)
 // https://stackoverflow.com/questions/20702333/refresh-fragment-at-reload
-public class ISFragment extends Fragment {
+public class SFragment extends Fragment {
 
     private RecyclerView rv;
-    private ArrayList<ISModel> models;
+    private ArrayList<SModel> models;
     private LinearLayout llNoMedia;
     private View rootView;
 
@@ -47,7 +47,7 @@ public class ISFragment extends Fragment {
         rv.setLayoutManager(rv_lm);
 
         models = new ArrayList<>();
-        ISAdapter rvAdapter = new ISAdapter(models);
+        SAdapter rvAdapter = new SAdapter(models);
         rv.setAdapter(rvAdapter);
 
         String rootPath = Manager.getCurrentPath();
@@ -74,12 +74,12 @@ public class ISFragment extends Fragment {
         }
 
         for (File file : files) {
-            ISModel model = new ISModel(file);
+            SModel model = new SModel(file);
             models.add(model);
         }
 
-        Collections.sort(models, new Comparator<ISModel>() {
-            public int compare(ISModel o1, ISModel o2) {
+        Collections.sort(models, new Comparator<SModel>() {
+            public int compare(SModel o1, SModel o2) {
                 if (o1.isDirectory() && !o2.isDirectory()) {
                     return -1;
                 } else if (!o1.isDirectory() && o2.isDirectory()) {

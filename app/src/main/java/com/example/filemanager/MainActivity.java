@@ -25,7 +25,7 @@ import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.filemanager.ui.home.HFragment;
-import com.example.filemanager.ui.storage.internal.ISFragment;
+import com.example.filemanager.ui.storage.SFragment;
 import com.example.filemanager.ui.storage.options.ODialog;
 import com.example.filemanager.ui.storage.options.OModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -212,12 +212,12 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_internal_storage:
                 Manager.resetCurrentPathToESD();
                 Manager.setCurrentFile("");
-                currentNavigationFragment = new ISFragment();
+                currentNavigationFragment = new SFragment();
                 break;
             case R.id.nav_external_storage:
                 Manager.resetCurrentPathSDCard();
                 Manager.setCurrentFile("");
-                currentNavigationFragment = new ISFragment();
+                currentNavigationFragment = new SFragment();
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + id);
@@ -242,8 +242,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListFragmentInteraction(OModel.Item item) {
-        if (currentNavigationFragment instanceof ISFragment) {
-            ISFragment isf = (ISFragment) currentNavigationFragment;
+        if (currentNavigationFragment instanceof SFragment) {
+            SFragment isf = (SFragment) currentNavigationFragment;
             if (isf.processActionOnItem(item)) {
                 Manager.refreshFragment(this, currentNavigationFragment);
             } else {
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity
     public void onBackPressed() {
         boolean showExitAppDialog = false;
 
-        if (currentNavigationFragment instanceof ISFragment) {
+        if (currentNavigationFragment instanceof SFragment) {
             if (Manager.removePathLevel()) {
                 Manager.refreshFragment(this, currentNavigationFragment);
             } else {

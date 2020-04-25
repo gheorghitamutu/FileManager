@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage.internal;
+package com.example.filemanager.ui.storage;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -25,10 +25,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
-public class ISAdapter extends RecyclerView.Adapter<ISAdapter.ViewHolder> {
-    private List<ISModel> models;
+public class SAdapter extends RecyclerView.Adapter<SAdapter.ViewHolder> {
+    private List<SModel> models;
 
-    ISAdapter(List<ISModel> models) {
+    SAdapter(List<SModel> models) {
         this.models = models;
     }
 
@@ -46,7 +46,7 @@ public class ISAdapter extends RecyclerView.Adapter<ISAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
-        ISModel model = models.get(position);
+        SModel model = models.get(position);
         holder.tvFilename.setText(model.getFilename());
 
         File file = new File(model.getFilepath());
