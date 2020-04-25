@@ -100,9 +100,46 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        // TODO: add listeners for these 2 fab
         fabCopyMoveFSObject = findViewById(R.id.ok);
+        fabCopyMoveFSObject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fabCancelActionFSObject.hide();
+                fabCopyMoveFSObject.hide();
+                fabNewFSObject.show();
+
+                boolean result = Manager.doFSAction();
+                if (result) {
+                    Toast.makeText(view.getContext(), "Action succeeded!", Toast.LENGTH_SHORT).show();
+
+                    MainActivity ma = null;
+                    try {
+                        ma = ((MainActivity) (Manager.getActivity()));
+                    } catch (ClassNotFoundException |
+                            NoSuchMethodException |
+                            InvocationTargetException |
+                            IllegalAccessException |
+                            NoSuchFieldException e) {
+                        e.printStackTrace();
+                    }
+
+                    Manager.refreshFragment(Objects.requireNonNull(ma), currentNavigationFragment);
+                } else {
+                    Toast.makeText(view.getContext(), "Action failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         fabCancelActionFSObject = findViewById(R.id.cancel);
+        fabCancelActionFSObject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fabCancelActionFSObject.hide();
+                fabCopyMoveFSObject.hide();
+                fabNewFSObject.show();
+                Manager.setActionAndSource("");
+            }
+        });
 
         // no need to appear on home screen
         fabNewFSObject.hide();
@@ -266,10 +303,17 @@ public class MainActivity extends AppCompatActivity
     public void onListFragmentInteraction(OModel.Item item) {
         if (currentNavigationFragment instanceof SFragment) {
             SFragment isf = (SFragment) currentNavigationFragment;
+            String option = item.getOption();
             if (isf.processActionOnItem(item)) {
-                Manager.refreshFragment(this, currentNavigationFragment);
+                if (!option.equals("Copy") && !option.equals("Move")) {
+                    Manager.refreshFragment(this, currentNavigationFragment);
+                } else {
+                    fabNewFSObject.hide();
+                    fabCopyMoveFSObject.show();
+                    fabCancelActionFSObject.show();
+                }
             } else {
-                if (!item.getOption().equals("Rename")) { // this action handle the toast message itself
+                if (!option.equals("Rename")) { // this action handle the toast message itself
                     Toast.makeText(this, "Action " + item.getOption() + " failed!", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -287,7 +331,6 @@ public class MainActivity extends AppCompatActivity
                 showExitAppDialog = true;
             }
         }
-        // TODO: should add the rest of the fragments
         else {
             showExitAppDialog = true;
         }

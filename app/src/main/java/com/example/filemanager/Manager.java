@@ -16,7 +16,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,6 +32,23 @@ import java.util.Objects;
 public class Manager {
     private static String currentPath = getDefaultESDAbsolutePath();
     private static String currentFile = "";
+    private static String currentObjPathForAction = "";
+    private static String currentObjFilenameForAction = "";
+    private static String currentAction = "";
+
+    public static void setActionAndSource(String action) {
+        currentObjPathForAction = (Paths.get(currentPath, currentFile)).toString();
+        currentObjFilenameForAction = currentFile;
+        currentAction = action;
+    }
+
+    public static String getCurrentObjPathForAction() {
+        return currentObjPathForAction;
+    }
+
+    public static String getCurrentAction() {
+        return currentAction;
+    }
 
     private static String getDefaultESDAbsolutePath() {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
@@ -285,5 +306,65 @@ public class Manager {
 
     public static void resetCurrentPathSDCard() {
         currentPath = getDefaultSDCardAbsolutePath();
+    }
+
+    static boolean doFSAction() {
+        boolean result = false;
+
+        File src = new File(currentObjPathForAction);
+
+        String dstPath = Paths.get(currentPath, currentObjFilenameForAction).toString();
+        File dst = new File(dstPath);
+
+        if (src.exists() && !dst.exists()) {
+            try {
+                if (currentAction.equals("Copy")) {
+                    copyFileOrDirectory(src, dst); // if doesn't throw then succeeded
+                    result = true;
+                } else if (currentAction.equals("Move")) {
+                    result = src.renameTo(dst);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                result = false;
+            }
+        }
+
+        return result;
+    }
+
+    private static void copyFile(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
+        OutputStream out = new FileOutputStream(dst);
+
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
+    }
+
+    private static void copyFileOrDirectory(File src, File dst) throws IOException {
+
+        if (src.isDirectory()) {
+            boolean result = true;
+            if (!dst.exists()) {
+                result = dst.mkdirs();
+            }
+
+            if (!result) {
+                return;
+            }
+
+            String[] children = src.list();
+            for (String child : Objects.requireNonNull(children)) {
+                copyFileOrDirectory(new File(src, child), new File(
+                        dst, child));
+            }
+        } else {
+            copyFile(src, dst);
+        }
     }
 }

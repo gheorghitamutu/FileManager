@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -91,17 +90,19 @@ public class SFragment extends Fragment {
     }
 
     public boolean processActionOnItem(OModel.Item item) {
-        // TODO: actual action (popup buttons for do action and cancel)
-        final String message = item.toString() + " " + Manager.getCurrentPath() + "/" + Manager.getCurrentFile();
-        Toast.makeText(rootView.getContext(), message, Toast.LENGTH_SHORT).show();
 
         boolean actionResult = false;
         switch (item.getOption()) {
             case "Rename":
                 Manager.renameFSObject(); // special case, it will handle the toast message itself
+                break;
             case "Copy":
+                Manager.setActionAndSource("Copy");
+                actionResult = true;
                 break;
             case "Move":
+                Manager.setActionAndSource("Move");
+                actionResult = true;
                 break;
             case "Delete":
                 actionResult = Manager.deleteFSObject();
