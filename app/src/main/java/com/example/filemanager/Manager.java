@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,7 +21,7 @@ public class Manager {
     private static String currentPath = getDefaultESDAbsolutePath();
     private static String currentFile = "";
 
-    public static String getDefaultESDAbsolutePath() {
+    private static String getDefaultESDAbsolutePath() {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
     }
 
@@ -37,20 +38,20 @@ public class Manager {
     }
 
     public static boolean addPathLevel() {
-        String tmpPath = (Paths.get(currentPath, currentFile)).toString();
+        String fullPath = (Paths.get(currentPath, currentFile)).toString();
 
-        File f = new File(tmpPath);
+        File f = new File(fullPath);
         if (!f.isDirectory()) {
             return false;
         }
 
-        currentPath = tmpPath;
+        currentPath = fullPath;
         currentFile = "";
 
         return true;
     }
 
-    public static boolean removePathLevel() {
+    static boolean removePathLevel() {
         if (Objects.equals(currentPath, getDefaultESDAbsolutePath())) {
             return false;
         }
@@ -124,6 +125,34 @@ public class Manager {
         }
 
         result = result && objPath.delete();
+        return result;
+    }
+
+    static boolean createNewFile(String name) {
+        boolean result = false;
+        String fullPath = (Paths.get(currentPath, name)).toString();
+
+        File file = new File(fullPath);
+        if (!file.exists()) {
+            try {
+                result = file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
+    }
+
+    static boolean createNewFolder(String name) {
+        boolean result = false;
+        String fullPath = (Paths.get(currentPath, name)).toString();
+
+        File file = new File(fullPath);
+        if (!file.exists()) {
+            result = file.mkdirs();
+        }
+
         return result;
     }
 }

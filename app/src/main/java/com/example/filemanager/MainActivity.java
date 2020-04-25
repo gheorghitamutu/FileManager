@@ -4,10 +4,12 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -29,8 +31,8 @@ import com.example.filemanager.ui.storage.options.ODialog;
 import com.example.filemanager.ui.storage.options.OModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
@@ -45,6 +47,9 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_CODE_READ_STORAGE = 101;
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    String dialogInputText;
+    String dialogTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +69,31 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                String[] objects = {"File", "Folder"};
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setTitle("Pick FS object");
+                builder.setItems(objects, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialogTitle = "";
+                        dialogInputText = "";
+
+                        switch (which) {
+                            case 0:
+                                dialogTitle = "New File";
+                                showFSObjectCreationInputDialog();
+                                break;
+                            case 1:
+                                dialogTitle = "New Folder";
+                                showFSObjectCreationInputDialog();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+                builder.show();
             }
         });
 
@@ -90,6 +118,56 @@ public class MainActivity extends AppCompatActivity
 
     public static Fragment getCurrentNavigationFragment() {
         return currentNavigationFragment;
+    }
+
+    public void showFSObjectCreationInputDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(dialogTitle);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialogInputText = input.getText().toString();
+
+                boolean result = false;
+                if (dialogTitle.equals("New File")) {
+                    result = Manager.createNewFile(dialogInputText);
+                } else if (dialogTitle.equals("New Folder")) {
+                    result = Manager.createNewFolder(dialogInputText);
+                }
+
+                MainActivity ma = null;
+                try {
+                    ma = (MainActivity) Manager.getActivity();
+                } catch (ClassNotFoundException |
+                        NoSuchMethodException |
+                        InvocationTargetException |
+                        IllegalAccessException |
+                        NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
+
+                if (result) {
+                    Toast.makeText(ma, "Action succeeded!", Toast.LENGTH_SHORT).show();
+                    Manager.refreshFragment(Objects.requireNonNull(ma), currentNavigationFragment);
+                } else {
+                    Toast.makeText(ma, "Action failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
     public boolean isStoragePermissionGranted() {
