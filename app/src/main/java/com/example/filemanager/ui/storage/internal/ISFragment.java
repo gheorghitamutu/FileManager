@@ -90,10 +90,25 @@ public class ISFragment extends Fragment {
         });
     }
 
-    public void processActionOnItem(OModel.Item item) {
+    public boolean processActionOnItem(OModel.Item item) {
         // TODO: actual action (popup buttons for do action and cancel)
         final String message = item.toString() + " " + Manager.getCurrentPath() + "/" + Manager.getCurrentFile();
         Toast.makeText(rootView.getContext(), message, Toast.LENGTH_SHORT).show();
+
+        boolean actionResult = false;
+        switch (item.getOption()) {
+            case "Copy":
+                break;
+            case "Move":
+                break;
+            case "Delete":
+                actionResult = Manager.deleteFSObject();
+                break;
+            default:
+                break;
+        }
+
         ODialog.getInstance().dismiss();
+        return actionResult;
     }
 }

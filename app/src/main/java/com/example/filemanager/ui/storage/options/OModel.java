@@ -27,16 +27,20 @@ public class OModel {
     }
 
     public static class Item {
-        final String content;
+        final String option;
 
         Item(String content) {
-            this.content = content;
+            this.option = content;
+        }
+
+        public String getOption() {
+            return option;
         }
 
         @NonNull
         @Override
         public String toString() {
-            return content;
+            return option;
         }
     }
 }

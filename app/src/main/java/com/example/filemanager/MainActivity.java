@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -162,7 +163,11 @@ public class MainActivity extends AppCompatActivity
     public void onListFragmentInteraction(OModel.Item item) {
         if (currentNavigationFragment instanceof ISFragment) {
             ISFragment isf = (ISFragment) currentNavigationFragment;
-            isf.processActionOnItem(item);
+            if (isf.processActionOnItem(item)) {
+                Manager.refreshFragment(this, currentNavigationFragment);
+            } else {
+                Toast.makeText(this, "Action " + item.getOption() + " failed!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

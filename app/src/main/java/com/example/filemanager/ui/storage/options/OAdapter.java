@@ -35,7 +35,7 @@ public class OAdapter extends RecyclerView.Adapter<OAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mContentView.setText(mValues.get(position).content);
+        holder.mContentView.setText(mValues.get(position).option);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override

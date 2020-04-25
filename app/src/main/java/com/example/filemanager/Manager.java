@@ -101,4 +101,29 @@ public class Manager {
         ft.attach(f);
         ft.commit();
     }
+
+    public static boolean deleteFSObject() {
+        boolean result = false;
+
+        String fullPath = (Paths.get(currentPath, currentFile)).toString();
+        File f = new File(fullPath);
+        if (f.exists()) {
+            result = deleteRecursive(f);
+        }
+
+        return result;
+    }
+
+    private static boolean deleteRecursive(File objPath) {
+        boolean result = true;
+
+        if (objPath.isDirectory()) {
+            for (File child : Objects.requireNonNull(objPath.listFiles())) {
+                result = result && deleteRecursive(child);
+            }
+        }
+
+        result = result && objPath.delete();
+        return result;
+    }
 }
