@@ -9,17 +9,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.filemanager.R;
-import com.example.filemanager.ui.storage.options.Content.Item;
-import com.example.filemanager.ui.storage.options.Dialog.OnListFragmentInteractionListener;
+import com.example.filemanager.ui.storage.options.ODialog.OnListFragmentInteractionListener;
+import com.example.filemanager.ui.storage.options.OModel.Item;
 
 import java.util.List;
 
-public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
+public class OAdapter extends RecyclerView.Adapter<OAdapter.ViewHolder> {
 
     private final List<Item> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    Adapter(List<Item> items, OnListFragmentInteractionListener listener) {
+    OAdapter(List<Item> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }

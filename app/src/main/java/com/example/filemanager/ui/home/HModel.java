@@ -1,16 +1,16 @@
-package com.example.filemanager.ui.storage.external;
+package com.example.filemanager.ui.home;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class ExternalStorageViewModel extends ViewModel {
+public class HModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public ExternalStorageViewModel() {
+    public HModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is external storage fragment.");
+        mText.setValue("This is home fragment.");
     }
 
     LiveData<String> getText() {

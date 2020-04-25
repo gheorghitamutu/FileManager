@@ -1,6 +1,7 @@
 package com.example.filemanager;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -19,11 +21,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
-import com.example.filemanager.ui.home.HomeFragment;
-import com.example.filemanager.ui.storage.external.ExternalStorageFragment;
-import com.example.filemanager.ui.storage.internal.InternalStorageFragment;
-import com.example.filemanager.ui.storage.options.Content;
-import com.example.filemanager.ui.storage.options.Dialog;
+import com.example.filemanager.ui.home.HFragment;
+import com.example.filemanager.ui.storage.external.ESFragment;
+import com.example.filemanager.ui.storage.internal.ISFragment;
+import com.example.filemanager.ui.storage.options.ODialog;
+import com.example.filemanager.ui.storage.options.OModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -32,11 +34,11 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        Dialog.OnListFragmentInteractionListener {
+        ODialog.OnListFragmentInteractionListener {
 
     private Toolbar toolbar;
     private DrawerLayout drawer;
-    private Fragment currentNavigationFragment;
+    private static Fragment currentNavigationFragment;
 
     private static final int REQUEST_CODE_WRITE_STORAGE = 102;
     private static final int REQUEST_CODE_READ_STORAGE = 101;
@@ -85,40 +87,8 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        FragmentContainerView containerView = findViewById(R.id.nav_host_fragment);
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.nav_home:
-                currentNavigationFragment = new HomeFragment();
-                break;
-            case R.id.nav_internal_storage:
-                currentNavigationFragment = new InternalStorageFragment();
-                break;
-            case R.id.nav_external_storage:
-                currentNavigationFragment = new ExternalStorageFragment();
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + id);
-        }
-
-        item.setChecked(true);
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.nav_host_fragment, currentNavigationFragment).commit();
-
-        containerView.post(new Runnable() {
-            @Override
-            public void run() {
-                drawer.closeDrawer(GravityCompat.START);
-            }
-        });
-
-        toolbar.setTitle(item.getTitle());
-
-        return true;
+    public static Fragment getCurrentNavigationFragment() {
+        return currentNavigationFragment;
     }
 
     public boolean isStoragePermissionGranted() {
@@ -153,10 +123,78 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentInteraction(Content.Item item) {
-        if (currentNavigationFragment instanceof InternalStorageFragment) {
-            InternalStorageFragment isf = (InternalStorageFragment) currentNavigationFragment;
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        FragmentContainerView containerView = findViewById(R.id.nav_host_fragment);
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.nav_home:
+                currentNavigationFragment = new HFragment();
+                break;
+            case R.id.nav_internal_storage:
+                currentNavigationFragment = new ISFragment();
+                break;
+            case R.id.nav_external_storage:
+                currentNavigationFragment = new ESFragment();
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + id);
+        }
+
+        item.setChecked(true);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.nav_host_fragment, currentNavigationFragment).commit();
+
+        containerView.post(new Runnable() {
+            @Override
+            public void run() {
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        });
+
+        toolbar.setTitle(item.getTitle());
+
+        return true;
+    }
+
+    @Override
+    public void onListFragmentInteraction(OModel.Item item) {
+        if (currentNavigationFragment instanceof ISFragment) {
+            ISFragment isf = (ISFragment) currentNavigationFragment;
             isf.processActionOnItem(item);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        boolean showExitAppDialog = false;
+
+        if (currentNavigationFragment instanceof ISFragment) {
+            if (Manager.removePathLevel()) {
+                Manager.refreshFragment(this, currentNavigationFragment);
+            } else {
+                showExitAppDialog = true;
+            }
+        }
+        // TODO: should add the rest of the fragments
+        else {
+            showExitAppDialog = true;
+        }
+
+        if (showExitAppDialog) {
+            new AlertDialog.Builder(this)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("Closing App")
+                    .setMessage("Are you sure you want to close this app?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
         }
     }
 }

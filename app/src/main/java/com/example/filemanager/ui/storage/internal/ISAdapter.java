@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,17 +18,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.filemanager.MainActivity;
 import com.example.filemanager.Manager;
 import com.example.filemanager.R;
-import com.example.filemanager.ui.storage.options.Dialog;
+import com.example.filemanager.ui.storage.options.ODialog;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
-public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
-    private List<InternalStorageViewModel> models;
+public class ISAdapter extends RecyclerView.Adapter<ISAdapter.ViewHolder> {
+    private List<ISModel> models;
 
-    Adapter(List<InternalStorageViewModel> models) {
+    ISAdapter(List<ISModel> models) {
         this.models = models;
     }
 
@@ -47,7 +46,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
-        InternalStorageViewModel model = models.get(position);
+        ISModel model = models.get(position);
         holder.tvFilename.setText(model.getFilename());
 
         File file = new File(model.getFilepath());
@@ -117,18 +116,21 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvFilename;
         ImageView ivItemIcon;
-        OnLongListener listener;
+        OnLongClickListener onLongClickListener;
+        OnClickListener onClickListener;
 
         ViewHolder(View view) {
             super(view);
             tvFilename = view.findViewById(R.id.filename);
             ivItemIcon = view.findViewById(R.id.item_icon);
-            listener = new OnLongListener();
-            view.setOnLongClickListener(listener);
+            onLongClickListener = new OnLongClickListener();
+            view.setOnLongClickListener(onLongClickListener);
+            onClickListener = new OnClickListener();
+            view.setOnClickListener(onClickListener);
         }
     }
 
-    public static class OnLongListener implements View.OnLongClickListener {
+    public static class OnLongClickListener implements View.OnLongClickListener {
 
         @Override
         public boolean onLongClick(View v) {
@@ -136,9 +138,9 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
             String currentFilename = tvFilename.getText().toString();
             Manager.setCurrentFile(currentFilename);
 
-            v.setBackgroundColor(
-                    ContextCompat.getColor(
-                            Objects.requireNonNull(v.getContext()), R.color.colorAccent));
+            //v.setBackgroundColor(
+            //        ContextCompat.getColor(
+            //                Objects.requireNonNull(v.getContext()), R.color.colorAccent));
 
             FragmentManager manager = null;
             try {
@@ -157,14 +159,42 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
                 manager.beginTransaction().remove(frag).commit();
             }
 
-            Dialog od = Dialog.newInstance(1);
+            ODialog od = ODialog.getInstance();
             od.show(manager, "fragment_options_dialog");
 
-            v.setBackgroundColor(
-                    ContextCompat.getColor(
-                            Objects.requireNonNull(v.getContext()), R.color.default_color));
+            //v.setBackgroundColor(
+            //        ContextCompat.getColor(
+            //                Objects.requireNonNull(v.getContext()), R.color.default_color));
 
             return true;
+        }
+    }
+
+    public static class OnClickListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            TextView tvFilename = v.findViewById(R.id.filename);
+            String currentFilename = tvFilename.getText().toString();
+
+            Manager.setCurrentFile(currentFilename);
+            boolean treeLevelAdded = Manager.addPathLevel();
+            if (!treeLevelAdded) { // filename should be the name of a child directory
+                return;
+            }
+
+            MainActivity ma = null;
+            try {
+                ma = (MainActivity) Manager.getActivity();
+            } catch (ClassNotFoundException |
+                    NoSuchMethodException |
+                    InvocationTargetException |
+                    IllegalAccessException |
+                    NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+
+            Manager.refreshFragment(Objects.requireNonNull(ma), MainActivity.getCurrentNavigationFragment());
         }
     }
 }

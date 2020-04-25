@@ -16,7 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.filemanager.Manager;
 import com.example.filemanager.R;
-import com.example.filemanager.ui.storage.options.Content;
+import com.example.filemanager.ui.storage.options.ODialog;
+import com.example.filemanager.ui.storage.options.OModel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,10 +26,10 @@ import java.util.Comparator;
 
 // TODO: refresh fragment with another root (you may have to use Manager)
 // https://stackoverflow.com/questions/20702333/refresh-fragment-at-reload
-public class InternalStorageFragment extends Fragment {
+public class ISFragment extends Fragment {
 
     private RecyclerView rv;
-    private ArrayList<InternalStorageViewModel> models;
+    private ArrayList<ISModel> models;
     private LinearLayout llNoMedia;
     private View rootView;
 
@@ -46,7 +47,7 @@ public class InternalStorageFragment extends Fragment {
         rv.setLayoutManager(rv_lm);
 
         models = new ArrayList<>();
-        Adapter rvAdapter = new Adapter(models);
+        ISAdapter rvAdapter = new ISAdapter(models);
         rv.setAdapter(rvAdapter);
 
         String rootPath = Manager.getCurrentPath();
@@ -73,12 +74,12 @@ public class InternalStorageFragment extends Fragment {
         }
 
         for (File file : files) {
-            InternalStorageViewModel model = new InternalStorageViewModel(file);
+            ISModel model = new ISModel(file);
             models.add(model);
         }
 
-        Collections.sort(models, new Comparator<InternalStorageViewModel>() {
-            public int compare(InternalStorageViewModel o1, InternalStorageViewModel o2) {
+        Collections.sort(models, new Comparator<ISModel>() {
+            public int compare(ISModel o1, ISModel o2) {
                 if (o1.isDirectory() && !o2.isDirectory()) {
                     return -1;
                 } else if (!o1.isDirectory() && o2.isDirectory()) {
@@ -89,9 +90,10 @@ public class InternalStorageFragment extends Fragment {
         });
     }
 
-    public void processActionOnItem(Content.Item item) {
+    public void processActionOnItem(OModel.Item item) {
         // TODO: actual action (popup buttons for do action and cancel)
         final String message = item.toString() + " " + Manager.getCurrentPath() + "/" + Manager.getCurrentFile();
         Toast.makeText(rootView.getContext(), message, Toast.LENGTH_SHORT).show();
+        ODialog.getInstance().dismiss();
     }
 }

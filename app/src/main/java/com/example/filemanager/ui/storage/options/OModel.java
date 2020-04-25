@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Content {
+public class OModel {
 
     static final List<Item> items = new ArrayList<>();
     private static final List<String> options = new ArrayList<>(

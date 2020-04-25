@@ -13,23 +13,26 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.filemanager.R;
-import com.example.filemanager.ui.storage.options.Content.Item;
+import com.example.filemanager.ui.storage.options.OModel.Item;
 
-public class Dialog extends DialogFragment {
+public class ODialog extends DialogFragment {
 
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private static ODialog instance = null;
 
-    public Dialog() {
+    public ODialog() {
     }
 
-    public static Dialog newInstance(int columnCount) {
-        Dialog fragment = new Dialog();
+    public static ODialog getInstance() {
+        if (instance == null) {
+            instance = new ODialog();
+        }
         Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
-        fragment.setArguments(args);
-        return fragment;
+        args.putInt(ARG_COLUMN_COUNT, 1);
+        instance.setArguments(args);
+        return instance;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class Dialog extends DialogFragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new Adapter(Content.items, mListener));
+            recyclerView.setAdapter(new OAdapter(OModel.items, mListener));
         }
         return view;
     }

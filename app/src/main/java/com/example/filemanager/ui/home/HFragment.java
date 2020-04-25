@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage.external;
+package com.example.filemanager.ui.home;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,14 +14,14 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.filemanager.R;
 
-public class ExternalStorageFragment extends Fragment {
+public class HFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        ExternalStorageViewModel externalStorageViewModel = new ViewModelProvider(this).get(ExternalStorageViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_external_storage, container, false);
-        final TextView textView = root.findViewById(R.id.text_external_storage);
-        externalStorageViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        HModel homeViewModel = new ViewModelProvider(this).get(HModel.class);
+        View root = inflater.inflate(R.layout.fragment_home, container, false);
+        final TextView textView = root.findViewById(R.id.text_home);
+        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
