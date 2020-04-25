@@ -50,6 +50,10 @@ public class MainActivity extends AppCompatActivity
     String dialogInputText;
     String dialogTitle;
 
+    FloatingActionButton fabNewFSObject;
+    FloatingActionButton fabCopyMoveFSObject;
+    FloatingActionButton fabCancelActionFSObject;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,8 +68,8 @@ public class MainActivity extends AppCompatActivity
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.create);
-        fab.setOnClickListener(new View.OnClickListener() {
+        fabNewFSObject = findViewById(R.id.create);
+        fabNewFSObject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String[] objects = {"File", "Folder"};
@@ -95,6 +99,15 @@ public class MainActivity extends AppCompatActivity
                 builder.show();
             }
         });
+
+        // TODO: add listeners for these 2 fab
+        fabCopyMoveFSObject = findViewById(R.id.ok);
+        fabCancelActionFSObject = findViewById(R.id.cancel);
+
+        // no need to appear on home screen
+        fabNewFSObject.hide();
+        fabCopyMoveFSObject.hide();
+        fabCancelActionFSObject.hide();
 
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -207,16 +220,25 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.nav_home:
+                fabNewFSObject.hide();
+                fabCopyMoveFSObject.hide();
+                fabCancelActionFSObject.hide();
                 currentNavigationFragment = new HFragment();
                 break;
             case R.id.nav_internal_storage:
                 Manager.resetCurrentPathToESD();
                 Manager.setCurrentFile("");
+                fabNewFSObject.show();
+                fabCopyMoveFSObject.hide();
+                fabCancelActionFSObject.hide();
                 currentNavigationFragment = new SFragment();
                 break;
             case R.id.nav_external_storage:
                 Manager.resetCurrentPathSDCard();
                 Manager.setCurrentFile("");
+                fabNewFSObject.show();
+                fabCopyMoveFSObject.hide();
+                fabCancelActionFSObject.hide();
                 currentNavigationFragment = new SFragment();
                 break;
             default:
