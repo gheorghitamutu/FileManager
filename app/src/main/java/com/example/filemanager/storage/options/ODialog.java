@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage.options;
+package com.example.filemanager.storage.options;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.filemanager.R;
-import com.example.filemanager.ui.storage.options.OModel.Item;
+import com.example.filemanager.storage.options.OModel.Item;
 
 public class ODialog extends DialogFragment {
 

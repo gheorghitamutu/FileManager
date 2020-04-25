@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage.options;
+package com.example.filemanager.storage.options;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.filemanager.R;
-import com.example.filemanager.ui.storage.options.ODialog.OnListFragmentInteractionListener;
-import com.example.filemanager.ui.storage.options.OModel.Item;
+import com.example.filemanager.storage.options.ODialog.OnListFragmentInteractionListener;
+import com.example.filemanager.storage.options.OModel.Item;
 
 import java.util.List;
 

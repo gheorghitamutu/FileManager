@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage;
+package com.example.filemanager.storage;
 
 import androidx.lifecycle.ViewModel;
 

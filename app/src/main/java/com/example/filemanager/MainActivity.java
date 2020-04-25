@@ -24,10 +24,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
-import com.example.filemanager.ui.home.HFragment;
-import com.example.filemanager.ui.storage.SFragment;
-import com.example.filemanager.ui.storage.options.ODialog;
-import com.example.filemanager.ui.storage.options.OModel;
+import com.example.filemanager.home.HFragment;
+import com.example.filemanager.notepad.NFragment;
+import com.example.filemanager.storage.SFragment;
+import com.example.filemanager.storage.options.ODialog;
+import com.example.filemanager.storage.options.OModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity
     private Toolbar toolbar;
     private DrawerLayout drawer;
     private static Fragment currentNavigationFragment;
+    private static boolean isNotepadFragmentShowed = false;
 
     private static final int REQUEST_CODE_WRITE_STORAGE = 102;
     private static final int REQUEST_CODE_READ_STORAGE = 101;
@@ -53,6 +55,9 @@ public class MainActivity extends AppCompatActivity
     FloatingActionButton fabNewFSObject;
     FloatingActionButton fabCopyMoveFSObject;
     FloatingActionButton fabCancelActionFSObject;
+    FloatingActionButton fabEditTextFile;
+
+    NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +111,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 fabCancelActionFSObject.hide();
                 fabCopyMoveFSObject.hide();
+                fabEditTextFile.hide();
                 fabNewFSObject.show();
 
                 boolean result = Manager.doFSAction();
@@ -136,8 +142,17 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 fabCancelActionFSObject.hide();
                 fabCopyMoveFSObject.hide();
+                fabEditTextFile.hide();
                 fabNewFSObject.show();
                 Manager.setActionAndSource("");
+            }
+        });
+
+        fabEditTextFile = findViewById(R.id.editTextFile);
+        fabEditTextFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onNavigationItemSelected(navigationView.getMenu().getItem(3)); // 3 - edit file
             }
         });
 
@@ -145,9 +160,10 @@ public class MainActivity extends AppCompatActivity
         fabNewFSObject.hide();
         fabCopyMoveFSObject.hide();
         fabCancelActionFSObject.hide();
+        fabEditTextFile.hide();
 
         drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
 
         ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.open_drawer, R.string.close_drawer);
@@ -157,6 +173,9 @@ public class MainActivity extends AppCompatActivity
         mDrawerToggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+
+        Menu menu = navigationView.getMenu(); // tricky stuff to hide edit file from menu
+        menu.findItem(R.id.nav_edit_text_file).setVisible(false);
     }
 
     @Override
@@ -255,11 +274,13 @@ public class MainActivity extends AppCompatActivity
         FragmentContainerView containerView = findViewById(R.id.nav_host_fragment);
         int id = item.getItemId();
 
+        isNotepadFragmentShowed = false;
         switch (id) {
             case R.id.nav_home:
                 fabNewFSObject.hide();
                 fabCopyMoveFSObject.hide();
                 fabCancelActionFSObject.hide();
+                fabEditTextFile.hide();
                 currentNavigationFragment = new HFragment();
                 break;
             case R.id.nav_internal_storage:
@@ -268,6 +289,7 @@ public class MainActivity extends AppCompatActivity
                 fabNewFSObject.show();
                 fabCopyMoveFSObject.hide();
                 fabCancelActionFSObject.hide();
+                fabEditTextFile.hide();
                 currentNavigationFragment = new SFragment();
                 break;
             case R.id.nav_external_storage:
@@ -276,7 +298,15 @@ public class MainActivity extends AppCompatActivity
                 fabNewFSObject.show();
                 fabCopyMoveFSObject.hide();
                 fabCancelActionFSObject.hide();
+                fabEditTextFile.hide();
                 currentNavigationFragment = new SFragment();
+                break;
+            case R.id.nav_edit_text_file:
+                fabCancelActionFSObject.hide();
+                fabCopyMoveFSObject.hide();
+                fabEditTextFile.hide();
+                currentNavigationFragment = new NFragment();
+                isNotepadFragmentShowed = true;
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + id);
@@ -349,5 +379,13 @@ public class MainActivity extends AppCompatActivity
                     .setNegativeButton("No", null)
                     .show();
         }
+    }
+
+    public void showEditFileFab() {
+        fabEditTextFile.show();
+    }
+
+    public void hideEditFileFab() {
+        fabEditTextFile.hide();
     }
 }

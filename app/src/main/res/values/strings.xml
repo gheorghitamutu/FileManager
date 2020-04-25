@@ -19,4 +19,7 @@
     <string name="no_media_found">No files</string>
     <string name="media_image">Media Image</string>
     <string name="object_image">Object Image</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="edit_file">Edit File</string>
 </resources>

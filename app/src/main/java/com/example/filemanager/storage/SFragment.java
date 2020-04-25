@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage;
+package com.example.filemanager.storage;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,25 +15,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.filemanager.Manager;
 import com.example.filemanager.R;
-import com.example.filemanager.ui.storage.options.ODialog;
-import com.example.filemanager.ui.storage.options.OModel;
+import com.example.filemanager.storage.options.ODialog;
+import com.example.filemanager.storage.options.OModel;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-// TODO: refresh fragment with another root (you may have to use Manager)
-// https://stackoverflow.com/questions/20702333/refresh-fragment-at-reload
 public class SFragment extends Fragment {
 
     private RecyclerView rv;
     private ArrayList<SModel> models;
     private LinearLayout llNoMedia;
-    private View rootView;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_internal_storage, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_internal_storage, container, false);
 
         TextView tvFilepath = rootView.findViewById(R.id.filepath);
         llNoMedia = rootView.findViewById(R.id.noMedia);

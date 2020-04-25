@@ -16,5 +16,8 @@
             android:id="@+id/nav_external_storage"
             android:icon="@drawable/ic_menu_nav_external_storage"
             android:title="@string/menu_external_storage" />
+        <item
+            android:id="@+id/nav_edit_text_file"
+            android:title="@string/edit_file" />
     </group>
 </menu>

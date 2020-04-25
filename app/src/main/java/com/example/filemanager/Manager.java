@@ -15,11 +15,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -40,14 +42,6 @@ public class Manager {
         currentObjPathForAction = (Paths.get(currentPath, currentFile)).toString();
         currentObjFilenameForAction = currentFile;
         currentAction = action;
-    }
-
-    public static String getCurrentObjPathForAction() {
-        return currentObjPathForAction;
-    }
-
-    public static String getCurrentAction() {
-        return currentAction;
     }
 
     private static String getDefaultESDAbsolutePath() {
@@ -75,10 +69,6 @@ public class Manager {
 
     public static String getCurrentPath() {
         return currentPath;
-    }
-
-    public static String getCurrentFile() {
-        return currentFile;
     }
 
     public static void setCurrentFile(String cf) {
@@ -300,11 +290,11 @@ public class Manager {
         builder.show();
     }
 
-    public static void resetCurrentPathToESD() {
+    static void resetCurrentPathToESD() {
         currentPath = getDefaultESDAbsolutePath();
     }
 
-    public static void resetCurrentPathSDCard() {
+    static void resetCurrentPathSDCard() {
         currentPath = getDefaultSDCardAbsolutePath();
     }
 
@@ -366,5 +356,39 @@ public class Manager {
         } else {
             copyFile(src, dst);
         }
+    }
+
+    private static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
+    private static String getStringFromFile(String filePath) throws Exception {
+        File src = new File(filePath);
+        FileInputStream fin = new FileInputStream(src);
+        String ret = convertStreamToString(fin);
+        fin.close();
+        return ret;
+    }
+
+    public static String getStringFromCurrentFile() {
+        String fullPath = (Paths.get(currentPath, currentFile)).toString();
+        try {
+            return getStringFromFile(fullPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    public static String getCurrentFilename() {
+        return currentFile;
     }
 }

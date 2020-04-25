@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage.options;
+package com.example.filemanager.storage.options;
 
 import androidx.annotation.NonNull;
 

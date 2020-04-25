@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.home;
+package com.example.filemanager.home;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

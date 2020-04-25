@@ -1,4 +1,4 @@
-package com.example.filemanager.ui.storage;
+package com.example.filemanager.storage;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.filemanager.MainActivity;
 import com.example.filemanager.Manager;
 import com.example.filemanager.R;
-import com.example.filemanager.ui.storage.options.ODialog;
+import com.example.filemanager.storage.options.ODialog;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -177,12 +177,6 @@ public class SAdapter extends RecyclerView.Adapter<SAdapter.ViewHolder> {
             TextView tvFilename = v.findViewById(R.id.filename);
             String currentFilename = tvFilename.getText().toString();
 
-            Manager.setCurrentFile(currentFilename);
-            boolean treeLevelAdded = Manager.addPathLevel();
-            if (!treeLevelAdded) { // filename should be the name of a child directory
-                return;
-            }
-
             MainActivity ma = null;
             try {
                 ma = (MainActivity) Manager.getActivity();
@@ -192,6 +186,21 @@ public class SAdapter extends RecyclerView.Adapter<SAdapter.ViewHolder> {
                     IllegalAccessException |
                     NoSuchFieldException e) {
                 e.printStackTrace();
+            }
+
+            Manager.setCurrentFile(currentFilename);
+            boolean treeLevelAdded = Manager.addPathLevel();
+            if (!treeLevelAdded) { // filename should be the name of a child directory
+
+                if (Manager.getCurrentFilename().endsWith(".txt")) {
+                    Objects.requireNonNull(ma).showEditFileFab();
+                } else {
+                    Objects.requireNonNull(ma).hideEditFileFab(); // just make sure that s hidden
+                }
+
+                return;
+            } else {
+                Objects.requireNonNull(ma).hideEditFileFab(); // just make sure that s hidden
             }
 
             Manager.refreshFragment(Objects.requireNonNull(ma), MainActivity.getCurrentNavigationFragment());
