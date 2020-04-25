@@ -97,6 +97,8 @@ public class ISFragment extends Fragment {
 
         boolean actionResult = false;
         switch (item.getOption()) {
+            case "Rename":
+                Manager.renameFSObject(); // special case, it will handle the toast message itself
             case "Copy":
                 break;
             case "Move":

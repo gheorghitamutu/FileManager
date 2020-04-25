@@ -25,7 +25,6 @@ import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.filemanager.ui.home.HFragment;
-import com.example.filemanager.ui.storage.external.ESFragment;
 import com.example.filemanager.ui.storage.internal.ISFragment;
 import com.example.filemanager.ui.storage.options.ODialog;
 import com.example.filemanager.ui.storage.options.OModel;
@@ -211,10 +210,14 @@ public class MainActivity extends AppCompatActivity
                 currentNavigationFragment = new HFragment();
                 break;
             case R.id.nav_internal_storage:
+                Manager.resetCurrentPathToESD();
+                Manager.setCurrentFile("");
                 currentNavigationFragment = new ISFragment();
                 break;
             case R.id.nav_external_storage:
-                currentNavigationFragment = new ESFragment();
+                Manager.resetCurrentPathSDCard();
+                Manager.setCurrentFile("");
+                currentNavigationFragment = new ISFragment();
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + id);
@@ -244,7 +247,9 @@ public class MainActivity extends AppCompatActivity
             if (isf.processActionOnItem(item)) {
                 Manager.refreshFragment(this, currentNavigationFragment);
             } else {
-                Toast.makeText(this, "Action " + item.getOption() + " failed!", Toast.LENGTH_SHORT).show();
+                if (!item.getOption().equals("Rename")) { // this action handle the toast message itself
+                    Toast.makeText(this, "Action " + item.getOption() + " failed!", Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }

@@ -10,7 +10,7 @@ public class OModel {
 
     static final List<Item> items = new ArrayList<>();
     private static final List<String> options = new ArrayList<>(
-            Arrays.asList("Copy", "Move", "Delete"));
+            Arrays.asList("Rename", "Copy", "Move", "Delete"));
 
     static {
         for (int i = 0; i < options.size(); i++) {

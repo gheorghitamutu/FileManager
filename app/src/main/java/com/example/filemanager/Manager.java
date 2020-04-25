@@ -2,8 +2,16 @@ package com.example.filemanager;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.text.InputType;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -16,13 +24,32 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 
-// TODO: actions on path (add/remove one level)
+// TODO: use ContentResolver for SDCard actions
 public class Manager {
     private static String currentPath = getDefaultESDAbsolutePath();
     private static String currentFile = "";
 
     private static String getDefaultESDAbsolutePath() {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
+    }
+
+    private static String getDefaultSDCardAbsolutePath() {
+        String removableStoragePath = "";
+        File[] fileList = new File("/storage/").listFiles();
+        for (File file : Objects.requireNonNull(fileList)) {
+            if (!file.getAbsolutePath().equalsIgnoreCase(Environment.getExternalStorageDirectory().getAbsolutePath()) && file.isDirectory() && file.canRead()) {
+                File[] contents = file.listFiles();
+                if (contents == null) {
+                    continue;
+                } else if (contents.length == 0) {
+                    continue;
+                }
+
+                return file.getAbsolutePath();
+            }
+        }
+
+        return removableStoragePath;
     }
 
     public static String getCurrentPath() {
@@ -109,22 +136,60 @@ public class Manager {
         String fullPath = (Paths.get(currentPath, currentFile)).toString();
         File f = new File(fullPath);
         if (f.exists()) {
-            result = deleteRecursive(f);
+            boolean sdCard = false;
+
+            String defaultESDPath = getDefaultESDAbsolutePath();
+            if (!currentPath.contains(defaultESDPath)) {
+                sdCard = true;
+            }
+
+            result = deleteRecursive(f, sdCard);
         }
 
         return result;
     }
 
-    private static boolean deleteRecursive(File objPath) {
+    private static boolean deleteRecursive(File objPath, boolean sdCard) {
         boolean result = true;
 
         if (objPath.isDirectory()) {
             for (File child : Objects.requireNonNull(objPath.listFiles())) {
-                result = result && deleteRecursive(child);
+                result = result && deleteRecursive(child, sdCard);
             }
         }
 
-        result = result && objPath.delete();
+        // this handles external sd card deletion
+        if (sdCard) {
+            final String where = MediaStore.MediaColumns.DATA + "=?";
+            final String[] selectionArgs = new String[]{
+                    objPath.getAbsolutePath()
+            };
+
+            MainActivity ma = null;
+            try {
+                ma = (MainActivity) Manager.getActivity();
+            } catch (ClassNotFoundException |
+                    NoSuchMethodException |
+                    InvocationTargetException |
+                    IllegalAccessException |
+                    NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+
+            final ContentResolver contentResolver = Objects.requireNonNull(ma).getContentResolver();
+            final Uri filesUri = MediaStore.Files.getContentUri("external");
+
+            contentResolver.delete(filesUri, where, selectionArgs);
+
+            if (objPath.exists()) {
+                contentResolver.delete(filesUri, where, selectionArgs);
+            }
+
+            result = result && !objPath.exists();
+        } else {
+            result = result && objPath.delete();
+        }
+
         return result;
     }
 
@@ -154,5 +219,71 @@ public class Manager {
         }
 
         return result;
+    }
+
+    // this is so bad..
+    public static void renameFSObject() {
+        MainActivity ma = null;
+        try {
+            ma = (MainActivity) Manager.getActivity();
+        } catch (ClassNotFoundException |
+                NoSuchMethodException |
+                InvocationTargetException |
+                IllegalAccessException |
+                NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        final MainActivity finalMa = ma;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(ma));
+        builder.setTitle("Rename FS Object");
+
+        final EditText input = new EditText(ma);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                boolean result = false;
+
+                String newName = input.getText().toString();
+
+                String oldPath = (Paths.get(currentPath, currentFile)).toString();
+                File oldFolder = new File(oldPath);
+
+                String newPath = (Paths.get(currentPath, newName)).toString();
+                File newFolder = new File(newPath);
+
+                if (oldFolder.exists() && !newFolder.exists()) {
+                    result = oldFolder.renameTo(newFolder);
+                }
+
+                if (result) {
+                    Toast.makeText(finalMa, "Action succeeded!", Toast.LENGTH_SHORT).show();
+                    Manager.refreshFragment(Objects.requireNonNull(finalMa), MainActivity.getCurrentNavigationFragment());
+                } else {
+                    Toast.makeText(finalMa, "Action failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public static void resetCurrentPathToESD() {
+        currentPath = getDefaultESDAbsolutePath();
+    }
+
+    public static void resetCurrentPathSDCard() {
+        currentPath = getDefaultSDCardAbsolutePath();
     }
 }
