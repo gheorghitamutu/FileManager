@@ -30,7 +30,7 @@ public class SFragment extends Fragment {
     private LinearLayout llNoMedia;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_internal_storage, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_storage, container, false);
 
         TextView tvFilepath = rootView.findViewById(R.id.filepath);
         llNoMedia = rootView.findViewById(R.id.noMedia);

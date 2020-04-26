@@ -90,7 +90,8 @@ public class Manager {
     }
 
     static boolean removePathLevel() {
-        if (Objects.equals(currentPath, getDefaultESDAbsolutePath())) {
+        if (Objects.equals(currentPath, getDefaultESDAbsolutePath()) ||
+                Objects.equals(currentPath, getDefaultSDCardAbsolutePath())) {
             return false;
         }
 
@@ -160,6 +161,24 @@ public class Manager {
         return result;
     }
 
+    private static boolean deleteFSObject(String path) {
+        boolean result = false;
+
+        File f = new File(path);
+        if (f.exists()) {
+            boolean sdCard = false;
+
+            String defaultESDPath = getDefaultESDAbsolutePath();
+            if (!currentPath.contains(defaultESDPath)) {
+                sdCard = true;
+            }
+
+            result = deleteRecursive(f, sdCard);
+        }
+
+        return result;
+    }
+
     private static boolean deleteRecursive(File objPath, boolean sdCard) {
         boolean result = true;
 
@@ -169,7 +188,7 @@ public class Manager {
             }
         }
 
-        // this handles external sd card deletion
+        // this handles external sd card deletion (files only)
         if (sdCard) {
             final String where = MediaStore.MediaColumns.DATA + "=?";
             final String[] selectionArgs = new String[]{
@@ -390,5 +409,29 @@ public class Manager {
 
     public static String getCurrentFilename() {
         return currentFile;
+    }
+
+    public static boolean saveInFile(String content) {
+        String fullPath = (Paths.get(currentPath, currentFile)).toString();
+        String fullPathTmp = fullPath + ".tmp";
+        if (createNewFile(fullPathTmp)) {
+            return false;
+        }
+
+        File fTmp = new File(fullPathTmp);
+        try (FileOutputStream stream = new FileOutputStream(fTmp)) {
+            stream.write(content.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+            deleteFSObject(fullPathTmp);
+            return false;
+        }
+
+        if (!deleteFSObject()) {
+            return false;
+        }
+
+        File f = new File(fullPath);
+        return fTmp.renameTo(f);
     }
 }

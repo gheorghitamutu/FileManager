@@ -1,6 +1,7 @@
 package com.example.filemanager.storage.options;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ public class ODialog extends DialogFragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private static ODialog instance = null;
+    private DialogInterface.OnDismissListener onDismissListener;
 
     public ODialog() {
     }
@@ -78,6 +80,10 @@ public class ODialog extends DialogFragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    public void setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
+        this.onDismissListener = onDismissListener;
     }
 
     public interface OnListFragmentInteractionListener {

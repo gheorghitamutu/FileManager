@@ -17,6 +17,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.collection.CircularArray;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -42,7 +43,10 @@ public class MainActivity extends AppCompatActivity
     private Toolbar toolbar;
     private DrawerLayout drawer;
     private static Fragment currentNavigationFragment;
+    private static Fragment previousNavigationFragment;
     private static boolean isNotepadFragmentShowed = false;
+    private static CircularArray<CharSequence> fragmentTitles;
+    private static MenuItem previousMenuItem;
 
     private static final int REQUEST_CODE_WRITE_STORAGE = 102;
     private static final int REQUEST_CODE_READ_STORAGE = 101;
@@ -176,6 +180,8 @@ public class MainActivity extends AppCompatActivity
 
         Menu menu = navigationView.getMenu(); // tricky stuff to hide edit file from menu
         menu.findItem(R.id.nav_edit_text_file).setVisible(false);
+
+        fragmentTitles = new CircularArray<>();
     }
 
     @Override
@@ -271,60 +277,83 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        FragmentContainerView containerView = findViewById(R.id.nav_host_fragment);
+        FragmentContainerView fcv = findViewById(R.id.nav_host_fragment);
         int id = item.getItemId();
+        CharSequence it = item.getTitle();
+        MenuItem mi = item;
 
-        isNotepadFragmentShowed = false;
-        switch (id) {
-            case R.id.nav_home:
-                fabNewFSObject.hide();
-                fabCopyMoveFSObject.hide();
-                fabCancelActionFSObject.hide();
-                fabEditTextFile.hide();
-                currentNavigationFragment = new HFragment();
-                break;
-            case R.id.nav_internal_storage:
-                Manager.resetCurrentPathToESD();
-                Manager.setCurrentFile("");
+        if (!isNotepadFragmentShowed) {
+            previousNavigationFragment = currentNavigationFragment;
+            fragmentTitles.addFirst(item.getTitle());
+            previousMenuItem = item;
+
+            switch (id) {
+                case R.id.nav_home:
+                    fabNewFSObject.hide();
+                    fabCopyMoveFSObject.hide();
+                    fabCancelActionFSObject.hide();
+                    fabEditTextFile.hide();
+                    currentNavigationFragment = new HFragment();
+                    break;
+                case R.id.nav_internal_storage:
+                    Manager.resetCurrentPathToESD();
+                    Manager.setCurrentFile("");
+                    fabNewFSObject.show();
+                    fabCopyMoveFSObject.hide();
+                    fabCancelActionFSObject.hide();
+                    fabEditTextFile.hide();
+                    currentNavigationFragment = new SFragment();
+                    break;
+                case R.id.nav_external_storage:
+                    Manager.resetCurrentPathSDCard();
+                    Manager.setCurrentFile("");
+                    fabNewFSObject.show();
+                    fabCopyMoveFSObject.hide();
+                    fabCancelActionFSObject.hide();
+                    fabEditTextFile.hide();
+                    currentNavigationFragment = new SFragment();
+                    break;
+                case R.id.nav_edit_text_file:
+                    fabCancelActionFSObject.hide();
+                    fabCopyMoveFSObject.hide();
+                    fabEditTextFile.hide();
+                    fabNewFSObject.hide();
+                    currentNavigationFragment = new NFragment();
+                    isNotepadFragmentShowed = true;
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + id);
+            }
+
+        } else {
+            isNotepadFragmentShowed = false;
+            currentNavigationFragment = previousNavigationFragment;
+
+            fragmentTitles.popFirst();
+            it = fragmentTitles.getFirst();
+            mi = previousMenuItem;
+
+            if (currentNavigationFragment instanceof SFragment) {
                 fabNewFSObject.show();
-                fabCopyMoveFSObject.hide();
-                fabCancelActionFSObject.hide();
-                fabEditTextFile.hide();
-                currentNavigationFragment = new SFragment();
-                break;
-            case R.id.nav_external_storage:
-                Manager.resetCurrentPathSDCard();
-                Manager.setCurrentFile("");
-                fabNewFSObject.show();
-                fabCopyMoveFSObject.hide();
-                fabCancelActionFSObject.hide();
-                fabEditTextFile.hide();
-                currentNavigationFragment = new SFragment();
-                break;
-            case R.id.nav_edit_text_file:
-                fabCancelActionFSObject.hide();
-                fabCopyMoveFSObject.hide();
-                fabEditTextFile.hide();
-                currentNavigationFragment = new NFragment();
-                isNotepadFragmentShowed = true;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + id);
+            }
         }
 
-        item.setChecked(true);
+        if (fragmentTitles.size() > 10) {
+            fragmentTitles.popLast();
+        }
+
+        toolbar.setTitle(it);
+        mi.setChecked(true);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.nav_host_fragment, currentNavigationFragment).commit();
 
-        containerView.post(new Runnable() {
+        fcv.post(new Runnable() {
             @Override
             public void run() {
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
-
-        toolbar.setTitle(item.getTitle());
 
         return true;
     }
@@ -360,8 +389,9 @@ public class MainActivity extends AppCompatActivity
             } else {
                 showExitAppDialog = true;
             }
-        }
-        else {
+        } else if (currentNavigationFragment instanceof NFragment) {
+            goToPreviousFragment();
+        } else {
             showExitAppDialog = true;
         }
 
@@ -387,5 +417,10 @@ public class MainActivity extends AppCompatActivity
 
     public void hideEditFileFab() {
         fabEditTextFile.hide();
+    }
+
+    public void goToPreviousFragment() {
+        // this is actually an exception and will be handled by is notepad fragment showed
+        onNavigationItemSelected(navigationView.getMenu().getItem(0));
     }
 }

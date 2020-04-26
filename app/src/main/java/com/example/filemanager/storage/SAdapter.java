@@ -1,5 +1,6 @@
 package com.example.filemanager.storage;
 
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,11 +55,13 @@ public class SAdapter extends RecyclerView.Adapter<SAdapter.ViewHolder> {
         if (file.isDirectory()) {
             holder.ivItemIcon.setImageResource(R.drawable.ic_folder);
         } else {
-            String ext = model.getFilename().substring(model.getFilename().lastIndexOf(".") + 1);
+            String ext = model.getFilename().substring(model.getFilename().lastIndexOf(".") + 1).toLowerCase();
             switch (ext) {
                 case "png":
                 case "jpeg":
                 case "jpg":
+                case "jpg_thumb":
+                case "gif":
                     final int thumbnailSize = 64;
 
                     Bitmap imageThumbnail =
@@ -132,39 +136,51 @@ public class SAdapter extends RecyclerView.Adapter<SAdapter.ViewHolder> {
 
     public static class OnLongClickListener implements View.OnLongClickListener {
 
+        private static ODialog od = ODialog.getInstance();
+        private static FragmentManager manager = null;
+
         @Override
         public boolean onLongClick(View v) {
             TextView tvFilename = v.findViewById(R.id.filename);
             String currentFilename = tvFilename.getText().toString();
             Manager.setCurrentFile(currentFilename);
 
-            //v.setBackgroundColor(
-            //        ContextCompat.getColor(
-            //                Objects.requireNonNull(v.getContext()), R.color.colorAccent));
+            v.setBackgroundColor(
+                    ContextCompat.getColor(
+                            Objects.requireNonNull(v.getContext()), R.color.colorAccent));
 
-            FragmentManager manager = null;
-            try {
-                MainActivity ma = ((MainActivity) (Manager.getActivity()));
-                manager = Objects.requireNonNull(ma).getSupportFragmentManager();
-            } catch (ClassNotFoundException |
-                    NoSuchMethodException |
-                    InvocationTargetException |
-                    IllegalAccessException |
-                    NoSuchFieldException e) {
-                e.printStackTrace();
+            if (manager == null) {
+                try {
+                    MainActivity ma = ((MainActivity) (Manager.getActivity()));
+                    manager = Objects.requireNonNull(ma).getSupportFragmentManager();
+                } catch (ClassNotFoundException |
+                        NoSuchMethodException |
+                        InvocationTargetException |
+                        IllegalAccessException |
+                        NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
             }
 
             Fragment frag = Objects.requireNonNull(manager).findFragmentByTag("fragment_options_dialog");
             if (frag != null) {
                 manager.beginTransaction().remove(frag).commit();
+                manager.executePendingTransactions();
             }
 
-            ODialog od = ODialog.getInstance();
-            od.show(manager, "fragment_options_dialog");
+            od.show(Objects.requireNonNull(manager), "fragment_options_dialog");
+            manager.executePendingTransactions();
 
-            //v.setBackgroundColor(
-            //        ContextCompat.getColor(
-            //                Objects.requireNonNull(v.getContext()), R.color.default_color));
+
+            final View fv = v;
+            Objects.requireNonNull(od.getDialog()).setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    fv.setBackgroundColor(
+                            ContextCompat.getColor(
+                                    Objects.requireNonNull(fv.getContext()), R.color.default_color));
+                }
+            });
 
             return true;
         }
@@ -192,7 +208,9 @@ public class SAdapter extends RecyclerView.Adapter<SAdapter.ViewHolder> {
             boolean treeLevelAdded = Manager.addPathLevel();
             if (!treeLevelAdded) { // filename should be the name of a child directory
 
-                if (Manager.getCurrentFilename().endsWith(".txt")) {
+                if (Manager.getCurrentFilename().endsWith(".txt") ||
+                        Manager.getCurrentFilename().endsWith(".py") ||
+                        Manager.getCurrentFilename().endsWith(".cpp")) {
                     Objects.requireNonNull(ma).showEditFileFab();
                 } else {
                     Objects.requireNonNull(ma).hideEditFileFab(); // just make sure that s hidden
